@@ -103,7 +103,6 @@ func TestLockFileLock(test *testing.T) {
 	if err != nil {
 		test.Fatal(err)
 	}
-	fmt.Println("lock1")
 	if err := lock1.Lock(); err != nil {
 		test.Fatal(err)
 	}
@@ -113,7 +112,6 @@ func TestLockFileLock(test *testing.T) {
 	if err != nil {
 		test.Fatal(err)
 	}
-	fmt.Println("lock2")
 	if err := lock2.Lock(); err != ErrWouldBlock {
 		test.Fatal("To lock file more than once must be unavailable.")
 	}
