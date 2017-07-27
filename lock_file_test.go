@@ -3,6 +3,7 @@ package daemon
 import (
 	"fmt"
 	"io/ioutil"
+	"runtime"
 	"os"
 	"testing"
 )
@@ -58,7 +59,13 @@ func TestGetFdName(test *testing.T) {
 	if err != nil {
 		test.Error(err)
 	} else {
-		if name != "/dev/null" {
+		devnull := "/dev/null"
+
+		if runtime.GOOS == "solaris" {
+			devnull = "/devices/pseudo/mm@0:null"
+		}
+
+		if name != devnull {
 			test.Errorf("Filename of fd 0: `%s'", name)
 		}
 	}
@@ -87,10 +94,16 @@ func TestReadPid(test *testing.T) {
 }
 
 func TestLockFileLock(test *testing.T) {
+	if runtime.GOOS == "solaris" {
+		// sensless under solaris, exclusive lock is always unlock for same process 
+		return
+	}
+
 	lock1, err := OpenLockFile(filename, fileperm)
 	if err != nil {
 		test.Fatal(err)
 	}
+	fmt.Println("lock1")
 	if err := lock1.Lock(); err != nil {
 		test.Fatal(err)
 	}
@@ -100,6 +113,7 @@ func TestLockFileLock(test *testing.T) {
 	if err != nil {
 		test.Fatal(err)
 	}
+	fmt.Println("lock2")
 	if err := lock2.Lock(); err != ErrWouldBlock {
 		test.Fatal("To lock file more than once must be unavailable.")
 	}

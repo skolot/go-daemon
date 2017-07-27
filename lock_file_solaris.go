@@ -1,32 +1,64 @@
-// +build dragonfly freebsd linux netbsd openbsd plan9
+// +build solaris
 
 package daemon
 
 import (
+	"io"
 	"fmt"
 	"syscall"
 )
 
 func lockFile(fd uintptr) error {
-	err := syscall.Flock(int(fd), syscall.LOCK_EX|syscall.LOCK_NB)
+	var fl syscall.Flock_t
+
+	fl.Start = 0;
+	fl.Len = 0;
+        fl.Whence = io.SeekStart
+	fl.Type = syscall.F_WRLCK
+//	cmd := syscall.F_GETLK
+
+//	err := syscall.FcntlFlock(fd, cmd, &fl)
+//
+//	if err != nil {
+//		return err	
+//	}
+//
+//	if fl.Type == syscall.F_WRLCK {
+//		return ErrWouldBlock
+//	}
+//
+//	fl.Type = syscall.F_WRLCK
+	cmd := syscall.F_SETLK
+
+	err := syscall.FcntlFlock(fd, cmd, &fl) 
+
 	if err == syscall.EWOULDBLOCK {
 		err = ErrWouldBlock
 	}
+
 	return err
 }
 
 func unlockFile(fd uintptr) error {
-	err := syscall.Flock(int(fd), syscall.LOCK_UN)
+        var fl syscall.Flock_t
+        var cmd int
+
+	fl.Type = syscall.F_UNLCK
+	cmd = syscall.F_SETLK
+
+	err := syscall.FcntlFlock(fd, cmd, &fl)
+
 	if err == syscall.EWOULDBLOCK {
 		err = ErrWouldBlock
 	}
+
 	return err
 }
 
 const pathMax = 0x1000
 
 func getFdName(fd uintptr) (name string, err error) {
-	path := fmt.Sprintf("/proc/self/fd/%d", int(fd))
+	path := fmt.Sprintf("/proc/self/path/%d", int(fd))
 	// We use predefined pathMax const because /proc directory contains special files
 	// so that unable to get correct size of pseudo-symlink through lstat.
 	// please see notes and example for readlink syscall:
