@@ -95,7 +95,7 @@ func TestReadPid(test *testing.T) {
 
 func TestLockFileLock(test *testing.T) {
 	if runtime.GOOS == "solaris" {
-		// sensless under solaris, exclusive lock is always unlock for same process 
+		// sensless under solaris, exclusive lock is always unlocked for same process 
 		return
 	}
 
