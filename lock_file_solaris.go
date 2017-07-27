@@ -15,19 +15,6 @@ func lockFile(fd uintptr) error {
 	fl.Len = 0;
         fl.Whence = io.SeekStart
 	fl.Type = syscall.F_WRLCK
-//	cmd := syscall.F_GETLK
-
-//	err := syscall.FcntlFlock(fd, cmd, &fl)
-//
-//	if err != nil {
-//		return err	
-//	}
-//
-//	if fl.Type == syscall.F_WRLCK {
-//		return ErrWouldBlock
-//	}
-//
-//	fl.Type = syscall.F_WRLCK
 	cmd := syscall.F_SETLK
 
 	err := syscall.FcntlFlock(fd, cmd, &fl) 
